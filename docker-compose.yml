@@ -1,5 +1,5 @@
 jenkins-primary:
-  image: "victor755555/docker-jenkins2:2.7.2"
+  image: "victor755555/jenkins:2.7.1"
   labels:
     io.rancher.sidekicks: jenkins-datavolume
     io.rancher.scheduler.global: 'true'

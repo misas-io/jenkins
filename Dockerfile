@@ -81,16 +81,20 @@ RUN curl -fsSL https://github.com/krallin/tini/releases/download/v${TINI_VERSION
 
 COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/tcp-slave-agent-port.groovy
 
+# jenkins version being bundled in this docker image
 ARG JENKINS_VERSION
-ENV JENKINS_VERSION ${JENKINS_VERSION:-2.7.1}
-ARG JENKINS_SHA
-ENV JENKINS_SHA ${JENKINS_SHA:-12d820574c8f586f7d441986dd53bcfe72b95453}
+ENV JENKINS_VERSION ${JENKINS_VERSION:-2.19.4}
 
+# jenkins.war checksum, download will be validated using it
+ARG JENKINS_SHA=ea61a4ff86f0db715511d1118a4e2f0a6a0311a1
 
-# could use ADD but this one does not check Last-Modified header 
+# Can be used to customize where jenkins.war get downloaded from
+ARG JENKINS_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war
+
+# could use ADD but this one does not check Last-Modified header neither does it allow to control checksum 
 # see https://github.com/docker/docker/issues/8331
-RUN curl -fsSL http://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/${JENKINS_VERSION}/jenkins-war-${JENKINS_VERSION}.war -o /usr/share/jenkins/jenkins.war \
-  && echo "$JENKINS_SHA  /usr/share/jenkins/jenkins.war" | sha1sum -c -
+RUN curl -fsSL ${JENKINS_URL} -o /usr/share/jenkins/jenkins.war \
+  && echo "${JENKINS_SHA}  /usr/share/jenkins/jenkins.war" | sha1sum -c -
 
 ENV JENKINS_UC https://updates.jenkins.io
 RUN chown -R ${user} "$JENKINS_HOME" /usr/share/jenkins/ref
@@ -103,13 +107,6 @@ EXPOSE 50000
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
-COPY jenkins.sh /usr/local/bin/jenkins.sh
-ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
-
-# from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
-COPY plugins.sh /usr/local/bin/plugins.sh
-COPY install-plugins.sh /usr/local/bin/install-plugins.sh
-
 # Install rancher-compose
 
 RUN curl -L -o rancher-compose.tar.xz \
@@ -121,7 +118,14 @@ RUN curl -L -o rancher-compose.tar.xz \
 # Install docker-compose, installed with pip there are issues with the
 # binary in alpine https://github.com/docker/compose/issues/3465
 
+USER ${user}
+
+# from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
+COPY plugins.sh /usr/local/bin/plugins.sh
+COPY install-plugins.sh /usr/local/bin/install-plugins.sh
+
 # Use Jenkins at startup
+COPY jenkins-support /usr/local/bin/jenkins-support
 COPY jenkins.sh /usr/local/bin/jenkins.sh
 ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
