@@ -107,18 +107,24 @@ EXPOSE 50000
 
 ENV COPY_REFERENCE_FILE_LOG $JENKINS_HOME/copy_reference_file.log
 
+ENV RANCHER_COMPOSE_VERSION 0.12.0
 # Install rancher-compose
 
 RUN curl -L -o rancher-compose.tar.xz \
-    https://github.com/rancher/rancher-compose/releases/download/v0.9.2/rancher-compose-linux-amd64-v0.9.2.tar.xz && \
-    tar xf rancher-compose.tar.xz && cp rancher-compose-v0.9.2/rancher-compose /usr/local/bin/ && \
+    https://github.com/rancher/rancher-compose/releases/download/v$RANCHER_COMPOSE_VERSION/rancher-compose-linux-amd64-v$RANCHER_COMPOSE_VERSION.tar.xz && \
+    tar xf rancher-compose.tar.xz && cp rancher-compose-v$RANCHER_COMPOSE_VERSION/rancher-compose /usr/local/bin/ && \
     rm -rf rancher-compose* && \
     rancher-compose --version
 
 # Install docker-compose, installed with pip there are issues with the
 # binary in alpine https://github.com/docker/compose/issues/3465
 
-USER ${user}
+ENV DOCKER_COMPOSE_VERSION 1.9.0
+
+RUN curl -L https://github.com/docker/compose/releases/download/$DOCKER_COMPOSE_VERSION/run.sh > /usr/local/bin/docker-compose && \
+		chmod +x /usr/local/bin/docker-compose
+
+#USER ${user}
 
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
