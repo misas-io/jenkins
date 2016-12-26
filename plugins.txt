@@ -1,0 +1,12 @@
+greenballs
+junit
+git
+github
+github-api
+git-client
+github-oauth
+plain-credentials
+scm-api
+ssh-credentials
+ssh-slaves
+swarm

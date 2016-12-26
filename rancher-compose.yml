@@ -1,0 +1,12 @@
+jenkins-primary:
+  scale: 1 
+  health_check:
+    port: 8080 
+    interval: 2000
+    initializing_timeout: 60000
+    unhealthy_threshold: 3
+    strategy: recreate
+    response_timeout: 2000
+    request_line: '' 
+    healthy_threshold: 2
+

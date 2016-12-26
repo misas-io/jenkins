@@ -1,0 +1,26 @@
+jenkins-primary:
+  image: "victor755555/docker-jenkins2:2.7.2"
+  labels:
+    io.rancher.sidekicks: jenkins-datavolume
+    io.rancher.scheduler.global: 'true'
+    io.rancher.container.pull_image: always
+    io.rancher.scheduler.affinity:host_label: id=scw-ep-1
+    traefik.enable: stack
+    traefik.domain: rabithole.us 
+    traefik.port: 8080
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /root/.ssh/:/root/.ssh/
+    - /root/env/:/root/env/
+  environment:
+    - ENV_FOLDER=/root/env/
+  env_file:
+    - /root/rancher-secrets.env
+  volumes_from:
+    - jenkins-datavolume
+jenkins-datavolume:
+  image: "busybox"
+  volumes:
+    - /var/jenkins_home:/var/jenkins_home
+  labels:
+    io.rancher.container.start_once: 'true'
