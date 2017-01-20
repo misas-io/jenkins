@@ -1,12 +1,12 @@
 jenkins-primary:
-  image: "victor755555/jenkins:2.7.1"
+  image: "victor755555/jenkins:2.19.4-alpine"
   labels:
     io.rancher.sidekicks: jenkins-datavolume
     io.rancher.scheduler.global: 'true'
     io.rancher.container.pull_image: always
     io.rancher.scheduler.affinity:host_label: id=scw-ep-1
     traefik.enable: stack
-    traefik.domain: rabithole.us 
+    traefik.domain: misas.io 
     traefik.port: 8080
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
